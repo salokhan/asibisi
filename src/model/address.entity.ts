@@ -22,5 +22,5 @@ export class AddressEntity extends BaseEntity {
   cityName: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
-  address: string;
+  addressDetails: string;
 }
