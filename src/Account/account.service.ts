@@ -11,19 +11,28 @@ import { AddressEntity } from '../model/address.entity';
 export class AccountService {
   constructor(
     @InjectRepository(AccountEntity)
-     private readonly repo: Repository<AccountEntity>, 
+    private readonly repo: Repository<AccountEntity>,
     @InjectRepository(ProfileEntity)
-     private profileRepo: Repository<ProfileEntity>,
-     @InjectRepository(AddressEntity)
-     private addressRepo: Repository<AddressEntity>
+    private profileRepo: Repository<ProfileEntity>,
+    @InjectRepository(AddressEntity)
+    private addressRepo: Repository<AddressEntity>
   ) { }
 
-  public async getAll() {
+  public async getAllAccounts() {
     return await this.repo.find();
   }
 
-  public async findAccount(email: string) {
-    return await this.repo.findOne({ userName: email });
+  public async getAccountByCredential(userName: string, password: string) {
+    let result = await this.repo.findOne({userName, password});
+    if (result) {
+      return result;
+    } else {
+      return undefined;
+    }
+  }
+  
+  public async getAccountByUserName(userName: string) {
+    return await this.repo.findOne({ userName: userName });
   }
 
   public async findAccountById(id: string) {
@@ -31,15 +40,26 @@ export class AccountService {
   }
 
   public async findAccountProfileById(id: string) {
-    return await this.profileRepo.findOne({ id });
+    return await this.profileRepo.find({ id });
   }
 
-  public async findAccountProfile(id: string) {
-    return await this.repo.findOne( id, {relations: ["profile"]});
+  public async getAccountProfileByAccountId(id: string): Promise<AccountProfileDTO> {
+    let result = await (await this.repo.findOne(id, { relations: ["profile"] }));
+    if (result) {
+      return result.profile;
+    } else {
+      return undefined;
+    }
+
   }
 
-  public async findAccountProfileAddress(id: string) {
-    return await this.profileRepo.findOne( id, {relations: ["address"]});
+  public async getAccountProfileAddressByProfileId(id: string) {
+    let result = await this.profileRepo.findOne(id, { relations: ["address"] });
+    if (result) {
+      return result.address;
+    } else {
+      return undefined;
+    }
   }
 
 
@@ -55,7 +75,7 @@ export class AccountService {
     accountProfileDto['createdBy'] = 'System';
     accountProfileDto['lastChangedBy'] = 'System';
 
-    const user = await this.repo.findOne( id ,{ relations: ["profile"] });
+    const user = await this.repo.findOne(id, { relations: ["profile"] });
     const userProfile = new ProfileEntity();
     userProfile.firstName = accountProfileDto.firstName;
     userProfile.lastName = accountProfileDto.lastName;
@@ -68,14 +88,14 @@ export class AccountService {
     user.profile = newProfile;
     return await (await this.repo.save(user)).profile;
 
-   
+
   }
 
   public async createAccountProfileAddress(id: string, accountProfileAddressDto: createAccountProfileAddressDTO): Promise<createAccountProfileAddressDTO> {
     accountProfileAddressDto['createdBy'] = 'System';
     accountProfileAddressDto['lastChangedBy'] = 'System';
 
-    const userProfile = await this.profileRepo.findOne( id ,{ relations: ["address"] });
+    const userProfile = await this.profileRepo.findOne(id, { relations: ["address"] });
     const userAddress = new AddressEntity();
     userAddress.countryId = accountProfileAddressDto.countryId;
     userAddress.countryName = accountProfileAddressDto.countryName;
@@ -91,8 +111,8 @@ export class AccountService {
     userProfile.address = newAddress;
     return await (await this.profileRepo.save(userProfile)).address;
 
-   
+
   }
 
-  
+
 }

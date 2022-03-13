@@ -16,6 +16,12 @@ export class AccountModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AccountMiddleware)
-      .forRoutes({path: 'Account',  method: RequestMethod.POST},{path:'Account/:id/Profile', method: RequestMethod.POST}, {path:'Account/Profile/:id/Address', method: RequestMethod.POST});
+      .forRoutes(
+        { path: 'Account', method: RequestMethod.POST },
+        { path: 'Account/:id/Profile', method: RequestMethod.POST },
+        { path: 'Account/Profile/:id/Address', method: RequestMethod.POST },
+        { path: 'Account/User/:user/Password/:password', method: RequestMethod.GET },
+        { path: 'Account/:id/Profile', method: RequestMethod.GET },
+        { path: 'Account/Profile/:id/Address', method: RequestMethod.GET });
   }
 }
