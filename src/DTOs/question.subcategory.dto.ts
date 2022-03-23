@@ -1,9 +1,9 @@
-import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
+import { ApiProperty, PickType } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
 import { IsString } from "class-validator";
 
 @Exclude()
-export class QuestionCategoryResponseObjectDTO {
+export class QuestionSubCategoryResponseObjectDTO {
     @Expose()
     @ApiProperty({ required: false })
     id: string;
@@ -11,9 +11,8 @@ export class QuestionCategoryResponseObjectDTO {
     @Expose()
     @ApiProperty({ required: true })
     @IsString()
-    category: string;
+    subCategory: string;
 
-    
     // @ApiProperty({ required: true })
     // @IsString()
     // createdBy: string;
@@ -28,32 +27,30 @@ export class QuestionCategoryResponseObjectDTO {
 }
 
 @Exclude()
-export class QuestionCategoryCreateReponseDTO {
+export class QuestionSubCategoryCreateReponseDTO {
     @Expose()
     @ApiProperty({ required: false })
     message: string;
 
     @Expose()
-    @ApiProperty({ required: false,  type: QuestionCategoryResponseObjectDTO})
+    @ApiProperty({ required: false,  type: QuestionSubCategoryResponseObjectDTO})
     result;
     
 }
 
 @Exclude()
-export class QuestionCategoryListReponseDTO {
+export class QuestionSubCategoryListReponseDTO {
     @Expose()
     @ApiProperty({ required: false })
     message: string;
 
     @Expose()
-    @ApiProperty({ required: false, isArray: true, type: QuestionCategoryResponseObjectDTO})
+    @ApiProperty({ required: false, isArray: true, type: QuestionSubCategoryResponseObjectDTO})
     result;
     
 }
 
-
-
-export class QuestionCategoryCreateBodyDTO extends PickType(QuestionCategoryResponseObjectDTO, ['category'] as const) {};
+export class QuestionSubCategoryCreateBodyDTO extends PickType(QuestionSubCategoryResponseObjectDTO, ['subCategory'] as const) {};
 
 
 

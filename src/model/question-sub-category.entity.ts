@@ -1,17 +1,15 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryColumn,
-  UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { QuestionCategoryEntity } from './question-category.entity';
-import { StateEntity } from './state.entity';
 
 @Entity('QuestionSubCategory')
+@Unique("index_qsc", ["questionCategory", "subCategory"])
 export class QuestionSubCategoryEntity extends BaseEntity{
   @PrimaryColumn() id: string;
 

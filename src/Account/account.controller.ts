@@ -3,7 +3,9 @@ import { plainToClass } from 'class-transformer';
 import { AccountProfileAddressDTO, AccountProfileDTO, createAccountProfileAddressDTO, createAccountProfileDTO } from '../DTOs/account.profile.dto';
 import { AccountDTO, createAccountDTO } from '../DTOs/account.dto';
 import { AccountService } from './account.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Account')
 @Controller('Account')
 export class AccountController {
   constructor(private accountService: AccountService) { }

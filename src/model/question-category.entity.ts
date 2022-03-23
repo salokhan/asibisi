@@ -1,10 +1,8 @@
 import {  
   Column,
-  CreateDateColumn,
   Entity,
   OneToMany,
   PrimaryColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { QuestionSubCategoryEntity } from './question-sub-category.entity';
@@ -13,7 +11,7 @@ import { QuestionSubCategoryEntity } from './question-sub-category.entity';
 export class QuestionCategoryEntity extends BaseEntity{
   @PrimaryColumn() id: string;
 
-  @Column({ type: 'varchar', length: 300, nullable: true })
+  @Column({ type: 'varchar', length: 300, nullable: true,  unique: true  })
   category: string | null;
 
   

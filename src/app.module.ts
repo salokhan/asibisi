@@ -10,10 +10,10 @@ import { configService } from './config/config.service';
 
 @Module({
   imports: [
-    QuestionModule,
-    LoggingModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-    AccountModule,
+    QuestionModule,
+    AccountModule
+    
   ],
   controllers: [AppController],
   providers: [AppService],
