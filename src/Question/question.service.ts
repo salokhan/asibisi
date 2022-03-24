@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QuestionCategoryEntity } from '../model/question-category.entity';
 import { Repository } from 'typeorm';
@@ -15,16 +15,18 @@ export class QuestionService {
 
   }
 
+
+
   public async getQuestionCategoryByCategory(category: string) {
     let result = await (await this.repoQuestionCategory.findOne({ where: { category } }));
-    if (result ) {
+    if (result) {
       return result;
     } else {
       return undefined;
     }
   }
   public async getQuestionCategoryByCategoryID(id: string) {
-    let result = await (await this.repoQuestionCategory.find({ id }));
+    let result = await (await this.repoQuestionCategory.findOne({ id }));
     if (result) {
       return result;
     } else {
@@ -41,7 +43,7 @@ export class QuestionService {
   }
 
   public async getAllQuestionCategory() {
-    let result = await (await this.repoQuestionCategory.find());
+    let result = await (await this.repoQuestionCategory.find({where:{isActive:true, isArchived: false}}));
     if (result) {
       return result;
     } else {
@@ -58,12 +60,22 @@ export class QuestionService {
     }
   }
 
+  public async deleteQuestionCategory(id: string) {
+    let cat = await (await this.repoQuestionCategory.findOne({ id }));
+    if(cat){
+
+    let result = await this.repoQuestionCategory.update({ id }, { isActive: false, isArchived: true });
+    let updateCategory = await this.repoQuestionCategory.findOne(id);
+    return updateCategory;
+    } else {
+      throw new NotFoundException({detail: 'Record with category id not found'});
+    }
+  }
+
   public async createQuestionCategory(QuestionCategoryResponseObjectDTO: QuestionCategoryCreateBodyDTO): Promise<QuestionCategoryResponseObjectDTO> {
     QuestionCategoryResponseObjectDTO['createdBy'] = 'System';
     QuestionCategoryResponseObjectDTO['lastChangedBy'] = 'System';
-    return this.repoQuestionCategory.save(QuestionCategoryResponseObjectDTO).then((e) => {
-      return e;
-    });
+    return await this.repoQuestionCategory.save(QuestionCategoryResponseObjectDTO);
   }
 
   public async createQuestionSubCategory(categoryid: string, QuestionSubCategoryResponseObjectDTO: QuestionSubCategoryCreateBodyDTO): Promise<QuestionSubCategoryResponseObjectDTO> {
@@ -71,6 +83,7 @@ export class QuestionService {
     QuestionSubCategoryResponseObjectDTO['lastChangedBy'] = 'System';
 
     const questionCategory = await this.repoQuestionCategory.findOne(categoryid, { relations: ["questionSubCategory"] });
+    if(questionCategory){
     const questionSubCategory = new QuestionSubCategoryEntity();
     questionSubCategory.subCategory = QuestionSubCategoryResponseObjectDTO.subCategory;
     questionSubCategory.createdBy = 'System';
@@ -80,6 +93,9 @@ export class QuestionService {
     questionCategory.questionSubCategory.push(newQuestionSubCategory);
     let abc = await (await this.repoQuestionCategory.save(questionCategory));
     return abc.questionSubCategory.pop();
+    } else {
+      throw new NotFoundException({detail: 'Record with category id not found'});
+    }
 
 
 
