@@ -1,10 +1,10 @@
 import { ConflictException, Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { QuestionService } from './question.service';
+import { QuestionPaperService } from './question.paper.service';
 
 @Injectable()
-export class QuestionMiddleware  implements NestMiddleware {
-  constructor(private questionService: QuestionService) { }
+export class QuestionPaperMiddleware  implements NestMiddleware {
+  constructor(private questionPaperService: QuestionPaperService) { }
 
   async use(req: Request, res: Response, next: Function) {
     switch (req.route.path + req.method) {
@@ -34,7 +34,7 @@ export class QuestionMiddleware  implements NestMiddleware {
 
 
   async getQuestionCategoryByCategory(category) {
-    let result = await this.questionService.getQuestionCategoryByCategory(category);
+    let result = await this.questionPaperService.getQuestionCategoryByCategory(category);
     if (result) {
       return true
     } else {
@@ -44,7 +44,7 @@ export class QuestionMiddleware  implements NestMiddleware {
   }
 
   async getQuestionCategoryByCategoryID(categoryID) {
-    let result = await this.questionService.getQuestionCategoryByCategoryID(categoryID);
+    let result = await this.questionPaperService.getQuestionCategoryByCategoryID(categoryID);
     if (result) {
       return true
     } else {
@@ -54,7 +54,7 @@ export class QuestionMiddleware  implements NestMiddleware {
   }
 
   async getQuestionSubCategoryBySubCategory(categoryId, subCategory) {
-    let result = await this.questionService.getQuestionSubCategoryBySubCategory(categoryId, subCategory);
+    let result = await this.questionPaperService.getQuestionSubCategoryBySubCategory(categoryId, subCategory);
     if (result) {
       return true
     } else {

@@ -1,4 +1,4 @@
-import { QuestionModule } from './Question/question.module';
+import { QuestionPaperModule } from './Question/question.paper.module';
 import { LogService } from './Logging/log.service';
 import { LoggingModule } from './Logging/logging.module';
 import { AccountModule } from './Account/account.module';
@@ -11,7 +11,7 @@ import { configService } from './config/config.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-    QuestionModule,
+    QuestionPaperModule,
     AccountModule
     
   ],
