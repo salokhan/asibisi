@@ -79,55 +79,43 @@ export class QuestionPaperService {
     }
   }
   public async getAllQuestions(id: string) {
-    let questionPaper = await this.repoQuestionPaper.findOne(id, {relations:['question','question.questionOption'], loadEagerRelations: true});
+    let questionPaper = await this.repoQuestionPaper.findOneOrFail(id, { relations: ['question', 'question.questionOption'], loadEagerRelations: true });
     return questionPaper;
   }
   public async updateQuestionPaperQuestion(id: string, questionPaperQuestion: QuestionPaperQuestoinUpdateBodyDTO) {
-    let oldQuestion = await this.repoQuestion.findOne(id, {relations: ['questionOption']});
-    let newQuestion = await this.repoQuestion.findOne(id, {relations: ['questionOption']});
-    newQuestion['createdBy'] = 'System';
-    newQuestion['lastChangedBy'] = 'System';
-    newQuestion.question = questionPaperQuestion.question;
-    newQuestion.description = questionPaperQuestion.description;
-    
-    if (oldQuestion) {
+    if (questionPaperQuestion.questionOptions && questionPaperQuestion.questionOptions.length > 3) {
       let countOfOptionAsAnswer = (questionPaperQuestion.questionOptions.filter((x) => x.isAnswer === true))['length'];
-        let questionType = 'none';
-        if (countOfOptionAsAnswer > 1) {
-          questionType = questionTypeEnum.MULTIOPTION;
-        } else {
-          questionType = questionTypeEnum.SINGLEOPTION;
-        }
-        newQuestion.questionType = questionType;
-        
-        //update question
-        let newQuestionAU = await this.repoQuestion.save({...oldQuestion,...newQuestion} );
+      let questionType = 'none';
+      if (countOfOptionAsAnswer > 1) {
+        questionType = questionTypeEnum.MULTIOPTION;
+      } else {
+        questionType = questionTypeEnum.SINGLEOPTION;
+      }
 
-        //get question with options
-        let newQuestionAfterSave = await this.repoQuestion.findOne(id, { relations: ['questionOption'] });
+      // update question
+      await this.repoQuestion.update({ id },
+        { questionType: questionType, question: questionPaperQuestion.question, description: questionPaperQuestion.description, createdBy: 'System', lastChangedBy: 'System' }
+      );
 
-        //remove the older options
-        await this.repoQuestionOption.remove(newQuestionAfterSave.questionOption);
+      //get question with options
+      let newQuestionAfterSave = await this.repoQuestion.findOne(id, { relations: ['questionOption'] });
+      let questionOptionIdsFromDB = newQuestionAfterSave.questionOption.map(a => a.id);
+      let questionOptionIdsFromPutObject = questionPaperQuestion.questionOptions.map(a => a.id);
 
-        newQuestionAfterSave.questionOption = [];
+      const final_result = questionOptionIdsFromDB.every(val => questionOptionIdsFromPutObject.includes(val));
+
+      if (final_result) {
         for (let i = 0; i < questionPaperQuestion.questionOptions.length; i++) {
-          const questionOption = new QuestionOptionEntity();
-          questionOption.option = questionPaperQuestion.questionOptions[i].option;
-          questionOption.isAnswer= questionPaperQuestion.questionOptions[i].isAnswer;
-          questionOption['createdBy'] = 'System';
-          questionOption['lastChangedBy'] = 'System';
-          questionOption['questionId'] = id;
-          newQuestionAfterSave.questionOption.push(await this.repoQuestionOption.save(questionOption));
+          let qOption = questionPaperQuestion.questionOptions[i];
+          await this.repoQuestionOption.update({ id: qOption.id }, qOption);
         }
-        //save the new options
-        await this.repoQuestion.save(newQuestionAfterSave);
-
         return await await this.repoQuestion.findOne(id, { relations: ['questionOption'] });
+      }
     }
     else {
       throw new NotFoundException({ detail: 'Record with question id not found' });
     }
-    
+
   }
   public async createQuestion(Question: OpenQuestionCreateBodyDTO): Promise<QuestionResponseObjectDTO> {
     Question['createdBy'] = 'System';
@@ -275,20 +263,18 @@ export class QuestionPaperService {
     QuestionSubCategoryResponseObjectDTO['createdBy'] = 'System';
     QuestionSubCategoryResponseObjectDTO['lastChangedBy'] = 'System';
 
-    const questionCategory = await this.repoQuestionCategory.findOne(categoryid, { relations: ["questionSubCategory"] });
-    if (questionCategory) {
-      const questionSubCategory = new QuestionSubCategoryEntity();
-      questionSubCategory.subCategory = QuestionSubCategoryResponseObjectDTO.subCategory;
-      questionSubCategory.createdBy = 'System';
-      questionSubCategory.lastChangedBy = 'System';
+    const questionCategory = await this.repoQuestionCategory.findOneOrFail(categoryid, { relations: ["questionSubCategory"] });
 
-      const newQuestionSubCategory = await this.repoQuestionSubCategory.save(questionSubCategory);
-      questionCategory.questionSubCategory.push(newQuestionSubCategory);
-      let abc = await (await this.repoQuestionCategory.save(questionCategory));
-      return abc.questionSubCategory.pop();
-    } else {
-      throw new NotFoundException({ detail: 'Record with category id not found' });
-    }
+    const questionSubCategory = new QuestionSubCategoryEntity();
+    questionSubCategory.subCategory = QuestionSubCategoryResponseObjectDTO.subCategory;
+    questionSubCategory.createdBy = 'System';
+    questionSubCategory.lastChangedBy = 'System';
+
+    const newQuestionSubCategory = await this.repoQuestionSubCategory.save(questionSubCategory);
+    questionCategory.questionSubCategory.push(newQuestionSubCategory);
+    let abc = await (await this.repoQuestionCategory.save(questionCategory));
+    return abc.questionSubCategory.pop();
+
 
 
 

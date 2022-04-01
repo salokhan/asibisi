@@ -19,7 +19,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const ctx = host.switchToHttp();
 
-    const httpStatus =
+    let httpStatus =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -28,14 +28,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception && exception['code']) {
       // if it is the db exception
-      if(exception && exception['code'] == '23505'){
+      if (exception && exception['code'] == '23505') {
         responseBody = {
           statusCode: httpStatus,
           timestamp: new Date().toISOString(),
           path: httpAdapter.getRequestUrl(ctx.getRequest()),
           detail: exception['detail']
         };
-      }else if(exception && exception['code'] == '22P02'){
+      } else if (exception && exception['code'] == '22P02') {
         responseBody = {
           statusCode: httpStatus,
           timestamp: new Date().toISOString(),
@@ -43,15 +43,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
           detail: exception['message']
         };
       }
-      
-    } else if(exception['response'] && exception['response'].detail) {
+
+    } else if (exception['response'] && exception['response'].detail) {
       responseBody = {
         statusCode: httpStatus,
         timestamp: new Date().toISOString(),
         path: httpAdapter.getRequestUrl(ctx.getRequest()),
         detail: exception['response'].detail
       };
-    } else {
+    } else if (exception && exception['name'] && exception['name'] == 'EntityNotFoundError'){
+      httpStatus = HttpStatus.NOT_FOUND
+      responseBody = {
+        statusCode: 404,
+        timestamp: new Date().toISOString(),
+        path: httpAdapter.getRequestUrl(ctx.getRequest()),
+        detail: 'Record not found with the given id'
+      };
+    }
+     else {
       responseBody = {
         statusCode: httpStatus,
         timestamp: new Date().toISOString(),

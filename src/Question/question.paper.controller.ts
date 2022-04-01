@@ -62,10 +62,11 @@ export class QuestionPaperController {
         type: QuestionPaperResponseObjectDTO
 
     })
-    public async getAllQuestionOption(@Param('id') id:string, @Res() res: Response) {
+    @ApiNotFoundResponse({ status: 404, type: ExceptionDTO })
+    public async getAllQuestion(@Param('id') id:string, @Res() res: Response) {
         let result = await this.questionPaperService.getAllQuestions(id);
         return res.json({
-            message: 'The categories are fetched successfully.',
+            message: 'The question paper are fetched successfully.',
             result: plainToInstance(QuestionPaperResponseObjectDTO, result)
         });
     }
