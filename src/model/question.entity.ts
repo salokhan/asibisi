@@ -40,6 +40,10 @@ export class QuestionEntity extends BaseEntity {
   })
   questionAccess: accessTypeEnum;
 
+  @Column({ type: 'boolean', default: false })
+  isVerified: boolean;
+
+
   @Column({
     type: "enum",
     enum: questionTypeEnum,

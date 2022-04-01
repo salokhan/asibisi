@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
-import { IsEnum, IsString } from "class-validator";
+import { IsArray, isArray, IsEnum, IsString, Validate } from "class-validator";
 
 export enum difficultyLevelEnum {
     EASY = "easy",
@@ -40,6 +40,7 @@ export class QuestionOptionResponseObjectDTO {
     description: string
 }
 export class QuestionCreateOptionBodyDTO extends PickType(QuestionOptionResponseObjectDTO, ['option','isAnswer','description'] as const) { };
+export class QuestionUpdateOptionBodyDTO extends PickType(QuestionOptionResponseObjectDTO, ['id','option','isAnswer','description'] as const) { };
 @Exclude()
 export class QuestionResponseObjectDTO {
     @Expose()
@@ -109,6 +110,59 @@ export class QuestionListReponseDTO {
 // export class QuestionCreateBodyDTO extends PickType(QuestionResponseObjectDTO, ['question','difficultyLevel','description','questionCategoryId','questionSubCategoryId','questionOptions'] as const) { };
 @Exclude()
 export class QuestionCreateBodyDTO {
+    @Expose()
+    @ApiProperty({ required: true })
+    @IsString()
+    question: string;
+
+    // @Expose()
+    // // @ApiProperty({ required: true, maxItems: 1, enum: difficultyLevelEnum, example:[difficultyLevelEnum.EASY,difficultyLevelEnum.MEDIUM,difficultyLevelEnum.DIFFICULT ] })
+    // @ApiProperty({ required: true, maxItems: 1, enum: difficultyLevelEnum  })
+    // @IsEnum(difficultyLevelEnum)
+    // difficultyLevel: difficultyLevelEnum
+
+    // @Expose()
+    // @ApiProperty({ required: true, maxItems: 1, enum: accessTypeEnum  })
+    // @IsEnum(accessTypeEnum)
+    // questionAccess: accessTypeEnum
+
+    @Expose()
+    @ApiProperty({ required: false })
+    @IsString()
+    description: string;
+
+    // @Expose()
+    // @ApiProperty({ required: true })
+    // questionCategoryId: string;
+
+    // @Expose()
+    // @ApiProperty({ required: true })
+    // questionSubCategoryId: string;
+
+    @ApiProperty({ required: true,isArray: true, type: QuestionCreateOptionBodyDTO})
+    questionOptions: QuestionCreateOptionBodyDTO[];
+
+}
+
+@Exclude()
+export class QuestionPaperQuestoinUpdateBodyDTO {
+    @Expose()
+    @ApiProperty({ required: true })
+    @IsString()
+    question: string;
+
+    @Expose()
+    @ApiProperty({ required: false })
+    @IsString()
+    description: string;
+
+    @ApiProperty({ required: true,isArray: true, type: QuestionUpdateOptionBodyDTO})
+    questionOptions: QuestionUpdateOptionBodyDTO[];
+
+}
+
+@Exclude()
+export class OpenQuestionCreateBodyDTO {
     @Expose()
     @ApiProperty({ required: true })
     @IsString()

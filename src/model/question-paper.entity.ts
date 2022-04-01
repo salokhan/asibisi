@@ -17,6 +17,8 @@ export enum questionTypeEnum {
     MULTIOPTION = "multiOption",
     SINGLEOPTION = "singleOption"
 }
+
+
 @Entity('QuestionPaper')
 export class QuestionPaperEntity extends BaseEntity {
     @Column({ type: 'varchar', length: 50, nullable: false })
@@ -31,6 +33,9 @@ export class QuestionPaperEntity extends BaseEntity {
 
     @Column({ type: 'varchar', length: 300, nullable: true })
     description: string;
+
+    @Column({ type: 'boolean', default: false })
+    isVerified: boolean;
 
     @Column({
         type: "enum",
