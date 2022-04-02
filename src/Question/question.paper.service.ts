@@ -59,7 +59,7 @@ export class QuestionPaperService {
 
   public async getAllQuestionSubCategory(id: string): Promise<QuestionSubCategoryResponseObjectDTO[]> {
     // let result = await this.repoQuestionCategory.findOne(id, { where: { isActive: true, isArchived: false }, relations: ["questionSubCategory"] });
-    let result = await this.repoQuestionSubCategory.find({ where: { isActive: true, isArchived: false, questionCategory:{id} }});
+    let result = await this.repoQuestionSubCategory.find({ where: { isActive: true, isArchived: false, questionCategory: { id } } });
     if (result) {
       return result;
     }
@@ -79,12 +79,12 @@ export class QuestionPaperService {
     //if question paper is not verified then allow to delete its question
     if (questionPaper && (!questionPaper.isVerified)) {
       let result = await this.repoQuestion.update({ id }, { isActive: false, isArchived: true });
-      let updatedQuestionPaper = await this.repoQuestionPaper.findOne({ where: { id: pid }, relations: ['question', 'question.questionOption'] });
+      let updatedQuestionPaper = await this.repoQuestionPaper.findOne({ where: { id: pid }, relations: ['questions', 'questions.questionOption'] });
       return updatedQuestionPaper
-    }  else {
+    } else {
       throw new ConflictException({ detail: 'Question can not be deleted from a verfied paper' });
     }
-    
+
 
   }
   public async deleteQuestionPaper(id: string) {
@@ -92,33 +92,94 @@ export class QuestionPaperService {
     //if question paper is not verified then allow to delete its question
     if (questionPaper && (!questionPaper.isVerified)) {
       let result = await this.repoQuestionPaper.update({ id }, { isActive: false, isArchived: true });
-      let updatedQuestionPaper = await this.repoQuestionPaper.findOne({ where: { id: id }, relations: ['question', 'question.questionOption'] });
+      let updatedQuestionPaper = await this.repoQuestionPaper.findOne({ where: { id: id }, relations: ['questions', 'questions.questionOption'] });
       return updatedQuestionPaper;
     } else {
       throw new ConflictException({ detail: 'Verified question paper can not be deleted' });
     }
 
   }
-  public async getAllVerifiedPapers(){
-    let questionPaper = await this.repoQuestionPaper.find({ relations: ['question', 'question.questionOption'], where:{isActive: true, isArchived: false, isVerified: true} });
+  public async getAllVerifiedPapers() {
+    let questionPaper = await this.repoQuestionPaper.find({ relations: ['questions', 'questions.questionOption'], where: { isActive: true, isArchived: false, isVerified: true } });
     return questionPaper;
   }
   public async getAllQuestions(id: string) {
-    let questionPaper = await this.repoQuestionPaper.findOneOrFail(id, { relations: ['question', 'question.questionOption'], loadEagerRelations: true });
-    let questionPaperNew = questionPaper.question.filter((x) => x.isActive == true && x.isArchived == false)
+    let questionPaper = await this.repoQuestionPaper.findOneOrFail(id, { relations: ['questions', 'questions.questionOption'], loadEagerRelations: true });
+    let questionPaperNew = questionPaper.questions.filter((x) => x.isActive == true && x.isArchived == false)
     return questionPaperNew;
   }
   public async verifyQuestionPaper(id: string) {
-    let questionPaper = await this.repoQuestionPaper.findOneOrFail(id, { relations: ['question'] });
+    let questionPaper = await this.repoQuestionPaper.findOneOrFail(id, { relations: ['questions'] });
     if (questionPaper) {
       await this.repoQuestionPaper.update({ id }, { isVerified: true });
-      for (let i = 0; i < questionPaper.question.length; i++) {
-        let question = questionPaper.question[i];
+      for (let i = 0; i < questionPaper.questions.length; i++) {
+        let question = questionPaper.questions[i];
         question.isVerified = true;
         await this.repoQuestion.update({ id: question.id }, question);
       }
-      return this.repoQuestionPaper.findOne(id, { relations: ['question', 'question.questionOption'] });
+      return this.repoQuestionPaper.findOne(id, { relations: ['questions', 'questions.questionOption'] });
     }
+  }
+  public async addQuestionPaperQuestion(id, questionPaperQuestion: QuestionPaperQuestoinUpdateBodyDTO) {
+    let newQuestionPaperId = '';
+    let newquestionPaper;
+    let QuestionPaper = await this.repoQuestionPaper.findOneOrFail(id);
+    if (!QuestionPaper.isVerified) {
+      if (questionPaperQuestion.questionOptions.length < 4) {
+        //if question options are less then 4
+        throw new ConflictException({ detail: 'question option should not be less then 4' });
+      } else {
+        if (questionPaperQuestion.questionOptions.findIndex((x) => x.isAnswer === true) == -1) {
+          //if question has no option as answer
+          throw new ConflictException({ detail: 'one option should be mentioned as answer' });
+        } else {
+
+          let countOfOptionAsAnswer = (questionPaperQuestion.questionOptions.filter((x) => x.isAnswer === true))['length'];
+          let questionType = 'none';
+          if (countOfOptionAsAnswer > 1) {
+            questionType = questionTypeEnum.MULTIOPTION;
+          } else {
+            questionType = questionTypeEnum.SINGLEOPTION;
+          }
+
+          let newquestion = new QuestionEntity();
+          newquestion['createdBy'] = 'System';
+          newquestion['lastChangedBy'] = 'System';
+          newquestion.questionType = questionType;
+          newquestion.question = questionPaperQuestion.question;
+          newquestion.isVerified = false;
+          newquestion.questionAccess = QuestionPaper.questionAccess;
+          newquestion.difficultyLevel = QuestionPaper.difficultyLevel;
+          newquestion.questionCategoryId = QuestionPaper.questionCategoryId;
+          newquestion.questionSubCategoryId = QuestionPaper.questionSubCategoryId;
+          newquestion.description = questionPaperQuestion.description;
+
+          let newQuestionFromDb = await this.repoQuestion.save(newquestion);
+          // QuestionPaper.question.push(newQuestionFromDb);
+          // await this.repoQuestionPaper.save(QuestionPaper);
+          let newQuestionId = newQuestionFromDb.id;
+          let newQuestionAfterSave = await this.repoQuestion.findOne(newQuestionId, { relations: ['questionOption'] });
+
+          for (let i = 0; i < questionPaperQuestion.questionOptions.length; i++) {
+            const questionOption = new QuestionOptionEntity();
+            questionOption.option = questionPaperQuestion.questionOptions[i].option;
+            questionOption.isAnswer = questionPaperQuestion.questionOptions[i].isAnswer;
+            questionOption['createdBy'] = 'System';
+            questionOption['lastChangedBy'] = 'System';
+            questionOption['questionId'] = newQuestionId;
+            newQuestionAfterSave.questionOption.push(await this.repoQuestionOption.save(questionOption));
+          }
+          newQuestionAfterSave.questionPaper = [QuestionPaper];
+          await this.repoQuestion.save(newQuestionAfterSave);
+
+        }
+        let questionPaperRecord = await this.repoQuestionPaper.findOne({ where: { id: id }, relations: ['questions', 'questions.questionOption'] })
+        return questionPaperRecord;
+      }
+    } else {
+      throw new ConflictException({ detail: 'question can not be added to verfied question paper' });
+    }
+
   }
   public async updateQuestionPaperQuestion(pid, id: string, questionPaperQuestion: QuestionPaperQuestoinUpdateBodyDTO) {
     let questionPaper = await this.repoQuestionPaper.findOneOrFail({ where: { id: pid } });
@@ -214,15 +275,15 @@ export class QuestionPaperService {
   public async createQuestionPaper(QuestionPaper: QuestionPaperCreateBodyDTO): Promise<QuestionPaperResponseObjectDTO> {
     let newQuestionPaperId = '';
     let newquestionPaper;
-    if (QuestionPaper.question.length < 5) {
+    if (QuestionPaper.questions.length < 5) {
       throw new ConflictException({ detail: 'question paper should atlest contais 5 questions' });
     }
     else {
-      if (QuestionPaper.question.filter(q => q.questionOptions.length < 4).length > 0) {
+      if (QuestionPaper.questions.filter(q => q.questionOptions.length < 4).length > 0) {
         //if question options are less then 4
         throw new ConflictException({ detail: 'question option should not be less then 4' });
       } else {
-        if (QuestionPaper.question.filter(x => x.questionOptions.findIndex((x) => x.isAnswer === true) == -1).length > 0) {
+        if (QuestionPaper.questions.filter(x => x.questionOptions.findIndex((x) => x.isAnswer === true) == -1).length > 0) {
           //if question has no option as answer
           throw new ConflictException({ detail: 'one option should be mentioned as answer' });
         } else {
@@ -239,8 +300,8 @@ export class QuestionPaperService {
           newQuestionPaperId = neqQuestionPaperFromDB['id'];
 
           let questions = [];
-          for (let i = 0; i < QuestionPaper.question.length; i++) {
-            let Question = QuestionPaper.question[i];
+          for (let i = 0; i < QuestionPaper.questions.length; i++) {
+            let Question = QuestionPaper.questions[i];
             let countOfOptionAsAnswer = (Question.questionOptions.filter((x) => x.isAnswer === true))['length'];
             let questionType = 'none';
             if (countOfOptionAsAnswer > 1) {
@@ -285,8 +346,8 @@ export class QuestionPaperService {
         }
 
         // let rere= await this.repoQuestion.find({relations:['questionPaper']});
-        let questionPaperRecord = await this.repoQuestionPaper.findOne({ where: { id: newQuestionPaperId }, relations: ['question', 'question.questionOption'] })
-        return questionPaperRecord;//new QuestionPaperResponseObjectDTO();
+        let questionPaperRecord = await this.repoQuestionPaper.findOne({ where: { id: newQuestionPaperId }, relations: ['questions', 'questions.questionOption'] })
+        return questionPaperRecord;
       }
     }
 

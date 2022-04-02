@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
-import { IsEnum, IsString } from "class-validator";
+import { IsBoolean, IsEnum, IsString } from "class-validator";
 import { QuestionCreateBodyDTO, QuestionResponseObjectDTO } from "./question.dto";
 
 export enum difficultyLevelEnum {
@@ -41,11 +41,17 @@ export class QuestionPaperResponseObjectDTO {
     @ApiProperty({ required: true })
     @IsString()
     questionAccess: accessTypeEnum
-
+   
+    
     @Expose()
     @ApiProperty({ required: false })
     @IsString()
     description: string;
+
+    @Expose()
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    isVerified: boolean;
 
     @Expose()
     @ApiProperty({ required: true })
@@ -58,7 +64,7 @@ export class QuestionPaperResponseObjectDTO {
 
     @Expose()
     @ApiProperty({ required: true,isArray: true, type: QuestionResponseObjectDTO})
-    question: QuestionResponseObjectDTO[];
+    questions: QuestionResponseObjectDTO[];
 
 }
 
@@ -66,7 +72,32 @@ export class QuestionPaperResponseObjectDTO {
 export class QuestionPaperCreateReponseDTO {
     @Expose()
     @ApiProperty({ required: false })
-    question: string;
+    id: string;
+
+    @Expose()
+    @ApiProperty({ required: true })
+    @IsString()
+    difficultyLevel: difficultyLevelEnum
+
+    @Expose()
+    @ApiProperty({ required: true })
+    @IsString()
+    questionAccess: accessTypeEnum
+   
+    
+    @Expose()
+    @ApiProperty({ required: false })
+    @IsString()
+    description: string;
+
+    @Expose()
+    @ApiProperty({ required: false })
+    questionPaper: string;
+
+    @Expose()
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    isVerified: boolean;
 
     @Expose()
     @ApiProperty({ required: false, type: QuestionResponseObjectDTO })
@@ -119,7 +150,7 @@ export class QuestionPaperCreateBodyDTO {
     questionSubCategoryId: string;
 
     @ApiProperty({ required: true,isArray: true, type: QuestionCreateBodyDTO})
-    question: QuestionCreateBodyDTO[];
+    questions: QuestionCreateBodyDTO[];
 
 }
 

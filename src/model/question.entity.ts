@@ -60,7 +60,7 @@ export class QuestionEntity extends BaseEntity {
   @OneToMany(() => QuestionOptionEntity, (qos: QuestionOptionEntity) => qos.question)
   public questionOption: QuestionOptionEntity[];
 
-  @ManyToMany(() => QuestionPaperEntity, questionPaper => questionPaper.question)
+  @ManyToMany(() => QuestionPaperEntity, questionPaper => questionPaper.questions)
   questionPaper: QuestionPaperEntity[];
 
 

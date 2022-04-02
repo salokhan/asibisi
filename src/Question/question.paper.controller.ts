@@ -136,6 +136,25 @@ export class QuestionPaperController {
         });
     }
 
+    @ApiTags('Paper')
+    @Post('paper/:id/question')
+    @HttpCode(201)
+    @ApiInternalServerErrorResponse({ status: 500, type: ExceptionDTO })
+    @ApiCreatedResponse({
+        description: 'The record has been successfully created.',
+        type: QuestionCreateReponseDTO,
+    })
+    // @ApiResponse({ status: 201, description: 'The record has been successfully created.' })
+    @ApiInternalServerErrorResponse({ status: 500, type: ExceptionDTO })
+    public async postQuestionPaperQuestion(@Param('id') id: string, @Body() questionPaperQuestionDto: QuestionPaperQuestoinUpdateBodyDTO, @Res() res: Response) {
+        let result = await this.questionPaperService.addQuestionPaperQuestion(id, questionPaperQuestionDto);
+        res.status(HttpStatus.CREATED);
+        return res.json({
+            message: 'The record has been successfully created.',
+            result: plainToClass(QuestionResponseObjectDTO, result)
+        });
+    }
+
 
     @ApiTags('Question')
     @Post('/Category')
@@ -193,7 +212,7 @@ export class QuestionPaperController {
     })
     // @ApiResponse({ status: 201, description: 'The record has been successfully created.' })
     @ApiInternalServerErrorResponse({ status: 500, type: ExceptionDTO })
-    public async postQuestionPaperQuestion(@Param('pid') pid: string, @Param('id') id: string, @Body() questionPaperQuestionDto: QuestionPaperQuestoinUpdateBodyDTO, @Res() res: Response) {
+    public async putQuestionPaperQuestion(@Param('pid') pid: string, @Param('id') id: string, @Body() questionPaperQuestionDto: QuestionPaperQuestoinUpdateBodyDTO, @Res() res: Response) {
         let result = await this.questionPaperService.updateQuestionPaperQuestion(pid, id, questionPaperQuestionDto);
         res.status(HttpStatus.CREATED);
         return res.json({

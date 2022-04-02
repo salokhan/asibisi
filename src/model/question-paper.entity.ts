@@ -52,6 +52,6 @@ export class QuestionPaperEntity extends BaseEntity {
 
     @ManyToMany(() => QuestionEntity, question => question.questionPaper)
     @JoinTable()
-    question: QuestionEntity[];
+    questions: QuestionEntity[];
 
 }
