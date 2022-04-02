@@ -10,6 +10,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn'],
   });
+  // app.enableCors({origin:'http://localhost:4200'});
+  app.setGlobalPrefix('/api/v1');
   app.useGlobalPipes(new ValidationPipe());
   // const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
