@@ -4,13 +4,13 @@
   "port": 5432,
   "username": "postgres",
   "password": "postgres",
-  "database": "gardeningzone",
+  "database": "eventDB",
   "entities": [
     "src/model/**/*.entity{.ts,.js}"
   ],
   "migrationsTableName": "migration",
   "migrations": [
-    "src/migration/*.ts"
+    "src/migration/*{.ts,.js}"
   ],
   "cli": {
     "migrationsDir": "src/migration"

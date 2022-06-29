@@ -30,6 +30,10 @@ class ConfigService {
     return mode != 'DEV';
   }
 
+  public getAPIKEY(){
+    return this.getValue('API_KEY');
+  }
+
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     if(this.isProduction()){
       return {
@@ -45,7 +49,7 @@ class ConfigService {
   
         migrationsTableName: 'migration',
   
-        migrations: ['/dist/migration/*.ts'],
+        migrations: ['/dist/migration/*{.ts,.js}'],
   
         cli: {
           migrationsDir: 'dist/migration',
@@ -64,12 +68,12 @@ class ConfigService {
       password: this.getValue('POSTGRES_PASSWORD'),
       database: this.getValue('POSTGRES_DATABASE'),
 
-      entities: ['src/model/**/*.entity{.ts,.js}'],
+      entities: ['src/model/**/*.entity.js'],
       //entities: ['dist/model/**/*.entity{.ts,.js}'],
 
       migrationsTableName: 'migration',
 
-      migrations: ['src/migration/*.ts'],
+      migrations: ['src/migration/*.js'],
 
       cli: {
         migrationsDir: 'src/migration',

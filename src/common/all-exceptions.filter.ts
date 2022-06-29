@@ -28,7 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception && exception['code']) {
       // if it is the db exception
-      if (exception && exception['code'] == '23505') {
+      if (exception && (exception['code'] == '23505' || exception['code'] == '23502')) {
         responseBody = {
           statusCode: httpStatus,
           timestamp: new Date().toISOString(),

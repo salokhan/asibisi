@@ -1,21 +1,20 @@
-import { QuestionPaperModule } from './Question/question.paper.module';
-import { LogService } from './Logging/log.service';
-import { LoggingModule } from './Logging/logging.module';
-import { AccountModule } from './Account/account.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { configService } from './config/config.service';
+import { AccountModule } from './moduleAccount/account.module';
+import { EventModule } from './moduleEvent/event.module';
 
 @Module({
-  imports: [
+  imports: [EventModule,
+
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-    QuestionPaperModule,
     AccountModule
-    
+
   ],
-  controllers: [AppController],
+  controllers: [
+    AppController],
   providers: [AppService],
 })
 export class AppModule { }
