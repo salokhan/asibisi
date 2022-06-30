@@ -16,21 +16,21 @@ export class EventController {
   @ApiTags('Event')
   @Get('/Event')
   @HttpCode(200)
-  // @ApiOkResponse({
-  //   description: 'The events are fetched successfully.',
-  //   type: EventMultipleObjectDTO
+  @ApiOkResponse({
+    description: 'The events are fetched successfully.',
+    type: EventMultipleObjectDTO
 
-  // })
+  })
   public async getShajraPublished(@Req() req: Request, @Res() res: Response) {
-    //let result = await this.eventService.getEvents();
-    return res.json({
-      message: 'The events are fetched successfully.',
-      result: req.ip
-    });
+    let result = await this.eventService.getEvents();
     // return res.json({
     //   message: 'The events are fetched successfully.',
-    //   result: plainToInstance(EventMultipleTransformObjectDTO, result)
+    //   result: req.ip
     // });
+    return res.json({
+      message: 'The events are fetched successfully.',
+      result: plainToInstance(EventMultipleTransformObjectDTO, result)
+    });
   }
   /* -------------------------------------------------------------------------- */
   /*                                  get class                                 */
